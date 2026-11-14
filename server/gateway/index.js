@@ -1,0 +1,44 @@
+import express from "express";
+import dotenv from "dotenv";
+import proxy from "express-http-proxy";
+dotenv.config();
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { getCurrentUser } from "./controllers/user.controller.js";
+import protect from "./middlewares/auth.middleware.js";
+import { proxyWithHeader } from "./utils/proxyWithHeader.js";
+import morgan from "morgan";
+
+const PORT = process.env.PORT;
+const app = express();
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  }),
+);
+app.use(morgan("dev"));
+app.use(cookieParser());
+
+app.use(express.json({ limit: "50mb" }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "50mb",
+  }),
+);
+
+app.use("/api/auth", proxy(process.env.AUTH_SERVICE));
+app.use("/api/chat", protect, proxyWithHeader(process.env.CHAT_SERVICE));
+app.use("/api/agent", protect, proxyWithHeader(process.env.AGENT_SERVICE));
+app.use("/api/billing", protect, proxyWithHeader(process.env.BILLING_SERVICE));
+app.get("/api/me", protect, getCurrentUser);
+
+app.get("/", (req, res) => {
+  res.json({ message: "Hello from gateway!" });
+});
+
+app.listen(PORT, () => {
+  console.log(`Gateway started at Port ${PORT}`);
+});

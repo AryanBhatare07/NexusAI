@@ -1,0 +1,14 @@
+import api from "../../utils/axios";
+
+export const deleteConversation = async (id) => {
+  try {
+    const { data } = await api.delete(
+      `/api/chat/delete-conversation/${id}`
+    );
+
+    return data;
+  } catch (error) {
+    console.log("Delete conversation error:", error);
+    throw error;
+  }
+};
