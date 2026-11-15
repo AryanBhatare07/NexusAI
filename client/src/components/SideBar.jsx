@@ -27,6 +27,7 @@ import logout from "../features/logout";
 import { setUserData } from "../redux/userSlice";
 import { setChatStarted, setMessages } from "../redux/messageSlice";
 import BillingDrawer from "./BillingDrawer";
+import api from "../../utils/axios";
 
 function SideBar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -74,11 +75,15 @@ function SideBar() {
 
   const handleDeleteConversation = async (id) => {
     try {
+      await api.delete(`/api/chat/delete-conversation/${id}`);
+
       dispatch(removeConversation(id));
+
       if (selectedConversation?._id === id) {
         dispatch(setMessages([]));
         dispatch(setChatStarted(false));
       }
+
       setOpenMenu(null);
     } catch (error) {
       console.log("Delete error:", error.response?.data || error);
