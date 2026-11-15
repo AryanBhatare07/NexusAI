@@ -1,7 +1,6 @@
 import axios from "axios";
 import { graph } from "../graph/graph.js";
 import { addMessage } from "../config/memory.js";
-import redis from "../../../shared/redis/redis.js";
 
 export const agent = async (req, res, next) => {
   try {
