@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { AnimatePresence, easeInOut, motion } from "motion/react";
 import Editor from "@monaco-editor/react";
+import { useEffect } from "react";
 
 const Artifact = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -19,6 +20,16 @@ const Artifact = () => {
   const [activeFile, setActiveFile] = useState(0);
   const [copied, setCopied] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const openArtifact = () => setMobileOpen(true);
+
+    window.addEventListener("open-artifact", openArtifact);
+
+    return () => {
+      window.removeEventListener("open-artifact", openArtifact);
+    };
+  }, []);
 
   if (!artifacts?.length) return null;
 
@@ -75,17 +86,17 @@ ${htmlFile?.content || ""}
 
     return "text";
   };
-  const PanelContent = ({onClose}) => (
+  const PanelContent = ({ onClose }) => (
     <>
       {!collapsed ? (
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="h-14 px-4 border-b border-white/[0.06] flex items-center gap-3 shrink-0">
             <button
-              onClick={onClose ?? (() =>  setCollapsed(true))}
+              onClick={onClose ?? (() => setCollapsed(true))}
               className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/[0.05] transition-colors duration-150 bg-transparent border-none cursor-pointer shrink-0"
             >
-              {onClose? <X size={15}/> : <PanelRightClose size={17} /> }
+              {onClose ? <X size={15} /> : <PanelRightClose size={17} />}
             </button>
 
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -271,21 +282,6 @@ ${htmlFile?.content || ""}
   );
   return (
     <>
-      <button
-        onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-24 right-4 z-40
-        flex items-center gap-2 px-3.5 py-2
-        rounded-xl
-        bg-indigo-600
-        hover:bg-indigo-500 text-white text-[12px]
-        font-medium shadow-lg
-        shadow-indigo-500/20 border-none cursor-pointer
-        transition-colors duration-150"
-      >
-        <Code2 size={13} />
-        View Code
-      </button>
-
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -308,7 +304,7 @@ ${htmlFile?.content || ""}
               }}
               className="lg:hidden fixed inset-y-0 right-0 z-50 w-[88vw] max-w-[420px] border-l border-white/[0.06] overflow-hidden"
             >
-              <PanelContent onClose={()=>setMobileOpen(false)} />
+              <PanelContent onClose={() => setMobileOpen(false)} />
             </motion.div>
           </>
         )}

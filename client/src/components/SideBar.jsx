@@ -65,11 +65,18 @@ function SideBar() {
   const handleCreateConversation = async () => {
     dispatch(setMessages([]));
     dispatch(setChatStarted(false));
-    const data = await createConversation();
+    setOpenMenu(null);
 
-    if (data?._id) {
-      dispatch(addConversation(data));
-      dispatch(setSelectedConversation(data));
+    try {
+      const data = await createConversation();
+
+      if (data?._id) {
+        dispatch(addConversation(data));
+        dispatch(setSelectedConversation(data));
+        setMobileOpen(false);
+      }
+    } catch (error) {
+      console.log("Create conversation error:", error);
     }
   };
 
@@ -174,7 +181,7 @@ function SideBar() {
       )}
       <div
         className={`fixed lg:static inset-y-0 left-0 z-50
-        w-[270px] h-screen shrink-0
+        w-[270px] h-[100dvh] shrink-0
         bg-[#0d0f14] border-r border-white/[0.06]
         transition-transform duration-300
         ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
@@ -238,7 +245,7 @@ function SideBar() {
 
           <div
             ref={menuRef}
-            className="flex-1 overflow-y-auto px-2.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex-1 min-h-0 overflow-y-auto px-2.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {conversations.map((conv, idx) => {
               const isActive = selectedConversation?._id === conv?._id;
