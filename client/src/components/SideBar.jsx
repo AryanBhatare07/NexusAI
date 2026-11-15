@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Coins,
   LogOut,
@@ -30,6 +31,7 @@ import BillingDrawer from "./BillingDrawer";
 import api from "../../utils/axios";
 
 function SideBar() {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const dispatch = useDispatch();
   const [imageError, setImageError] = useState(false);
@@ -43,12 +45,16 @@ function SideBar() {
   const { userData } = useSelector((state) => state.user);
 
   useEffect(() => {
+    if (!userData?._id) {
+      dispatch(setConversations([]));
+      return;
+    }
     const getConv = async () => {
       const data = await getConversationS();
       dispatch(setConversations(data));
     };
     getConv();
-  }, [userData?._id]);
+  }, [userData?._id, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -81,22 +87,17 @@ function SideBar() {
   };
 
   const handleDeleteConversation = async (id) => {
-    // Immediately update UI
     dispatch(removeConversation(id));
 
     if (selectedConversation?._id === id) {
       dispatch(setMessages([]));
       dispatch(setChatStarted(false));
     }
-
     setOpenMenu(null);
-
     try {
       await api.delete(`/api/chat/delete-conversation/${id}`);
     } catch (error) {
       console.log("Delete error:", error.response?.data || error);
-
-      // Refresh conversations if backend deletion fails
       dispatch(getConversationS());
     }
   };
@@ -363,9 +364,10 @@ function SideBar() {
                     hover:bg-red-500/20 hover:text-red-300
                     hover:border-red-500/30
                     transition-all duration-200"
-                      onClick={() => {
-                        logout();
+                      onClick={async () => {
+                        await logout();
                         dispatch(setUserData(null));
+                        window.location.replace("/");
                       }}
                     >
                       <LogOut size={16} />
