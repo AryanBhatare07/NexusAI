@@ -5,6 +5,8 @@ import redis from "../../../shared/redis/redis.js";
 
 export const login = async (req, res) => {
   try {
+    console.log("AUTH LOGIN HIT");
+    console.log("TOKEN RECEIVED:", Boolean(token));
     const { token } = req.body;
     const decoded = await getAuth(app).verifyIdToken(token);
     let user = await User.findOne({
@@ -30,7 +32,6 @@ export const login = async (req, res) => {
 
     const checkSession = await redis.get(`user-session-${user._id}`);
 
-    console.log("SAVED USER SESSION:", checkSession);
     await redis.set(
       `session-${sessionId}`,
       JSON.stringify({
@@ -49,8 +50,9 @@ export const login = async (req, res) => {
 
     res.cookie("session", sessionId, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
