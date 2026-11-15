@@ -177,8 +177,8 @@ const ChatInput = () => {
     },
   ];
   return (
-    <div className="w-full overflow-visible px-3 md:px-5 py-3 border-t border-white/[0.06] bg-[#0d0f14]">
-      <div className="flex flex-col gap-2 bg-white/[0.03] border border-white/[0.07] rounded-2xl px-4 pt-3.5 pb-3">
+    <div className="w-full overflow-visible px-2.5 md:px-5 py-2 md:py-3 border-t border-white/[0.06] bg-[#0d0f14]">
+      <div className="flex flex-col gap-1.5 md:gap-2 bg-white/[0.03] border border-white/[0.07] rounded-2xl px-3 md:px-4 pt-2.5 md:pt-3.5 pb-2 md:pb-3">
         <div className="hidden md:flex w-[80%] gap-2 pr-2 flex-wrap">
           {agents.map((agent, i) => {
             const isActive = selectedAgent === agent.label;
@@ -318,7 +318,7 @@ const ChatInput = () => {
           onChange={(e) => setValue(e.target.value)}
           value={value}
           className="w-full bg-transparent outline-none border-none resize-none text-[14px] text-slate-200 placeholder:text-slate-600  leading-relaxed [scrollbar-width:none] [&::-webkit-scrollbar]:hidden  disabled:opacity-50"
-          rows={3}
+          rows={2}
         />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
@@ -336,21 +336,24 @@ const ChatInput = () => {
             />
             <button
               onClick={() => fileRef.current.click()}
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer"
+              className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer"
             >
               <Paperclip size={16} />
             </button>
-            <button className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer">
+            <button className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all duration-150 bg-transparent cursor-pointer">
               <Mic size={16} />
             </button>
           </div>
           <button
-            disabled={!value && isLoading}
+            disabled={!value.trim() && isLoading}
             onClick={handleSendMessage}
-            disabled={!value.trim()}
-            className={`flex items-center justify-center w-9 h-9 rounded-xl text-white border-none transition-all duration-150 ${value.trim() ? "bg-linear-to-br from-indigo-500 to-violet-700 cursor-pointer hover:opacity-90 shadow-md shadow-indigo-500/20" : "bg-white/[0.06] text-slate-600 cursor-default"}`}
+            className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-xl text-white border-none transition-all duration-150 ${value.trim() ? "bg-linear-to-br from-indigo-500 to-violet-700 cursor-pointer hover:opacity-90 shadow-md shadow-indigo-500/20" : "bg-white/[0.06] text-slate-600 cursor-default"}`}
           >
-            <ArrowUp size={18} strokeWidth={2.5} />
+            <ArrowUp
+              size={16}
+              className="md:w-[18px] md:h-[18px]"
+              strokeWidth={2.5}
+            />
           </button>
         </div>
       </div>
