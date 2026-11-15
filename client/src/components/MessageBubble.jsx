@@ -3,7 +3,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { Check, Copy, ExternalLink, X, FileText, Download } from "lucide-react";
+import { Check, Copy, ExternalLink, X, FileText } from "lucide-react";
 
 const MessageBubble = ({
   role,
