@@ -1,4 +1,4 @@
-import { checkAgentLimit } from "../config/agentlimit.js";
+import { checkAgentLimit } from "../config/agentLimit.js";
 import { SearchTool } from "../config/tavily.js";
 import { deductCredits } from "../utils/deductCredits.js";
 
