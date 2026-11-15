@@ -1,4 +1,3 @@
-import React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Crown, X } from "lucide-react";
 import { createOrder } from "../features/createOrder";
@@ -25,8 +24,7 @@ const BillingDrawer = ({ open, onClose }) => {
 
         handler: async (response) => {
           try {
-            const result = await verifyPayment(response);
-            console.log("SUCCESS:", result);
+            await verifyPayment(response);
 
             const updatedUser = await getCurrentUser();
             dispatch(setUserData(updatedUser));
@@ -93,7 +91,10 @@ const BillingDrawer = ({ open, onClose }) => {
                   <div>
                     <p className="text-slate-300 text-sm">Current Plan</p>
                     <h3 className="text-white text-xl font-bold capitalize">
-                      {userData?.plan || "free"}
+                      {userData?.plan
+                        ? userData.plan.charAt(0).toUpperCase() +
+                          userData.plan.slice(1)
+                        : "Free"}
                     </h3>
                   </div>
 
@@ -104,7 +105,7 @@ const BillingDrawer = ({ open, onClose }) => {
                   <div className="flex justify-between text-xs text-slate-400 mb-2">
                     <span>Credits</span>
                     <span>
-                      {userData?.credits || 0}/{userData?.totalCredits || 100}
+                      {userData?.credits ?? 0}/{userData?.totalCredits ?? 100}
                     </span>
                   </div>
 

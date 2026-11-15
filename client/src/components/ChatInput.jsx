@@ -112,7 +112,6 @@ const ChatInput = () => {
           pptTitle: data.pptTitle,
         }),
       );
-      console.log(data);
     } catch (error) {
       console.error("Message sending failed:", error);
     }

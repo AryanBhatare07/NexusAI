@@ -1,16 +1,24 @@
 export const extractArtifacts = (content) => {
   const fileRegex =
-    /^### FILE:\s*(.+?)\s*\r?\n```[a-zA-Z0-9+#.-]*\s*\r?\n([\s\S]*?)\r?\n```/gm;
+    /###\s*FILE:\s*(.+?)\s*\r?\n\s*```[^\r\n]*\r?\n([\s\S]*?)```/g;
 
   const files = [];
+  const seen = new Set();
 
   let match;
 
   while ((match = fileRegex.exec(content)) !== null) {
-    files.push({
-      name: match[1].trim(),
-      content: match[2].trim(),
-    });
+    const name = match[1].trim();
+    const code = match[2].trim();
+
+    if (!seen.has(name)) {
+      files.push({
+        name,
+        content: code,
+      });
+
+      seen.add(name);
+    }
   }
 
   return files;

@@ -14,9 +14,9 @@ const gemini = new ChatGoogleGenerativeAI({
 });
 
 const openrouter = new ChatOpenRouter({
-  model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+  model: "nvidia/nemotron-3.5-super-vl:free",
   temperature: 0,
-  maxTokens: 2500,
+  maxTokens: 8000,
 });
 
 export const getModel = async (agent) => {

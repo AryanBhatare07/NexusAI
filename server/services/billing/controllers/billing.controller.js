@@ -2,12 +2,19 @@ import { PLANS } from "../config/Plans.js";
 import razorpay from "../config/razorpay.js";
 import Payment from "../models/payment.model.js";
 import crypto from "crypto";
-import axios from 'axios'
+import axios from "axios";
 
 export const createOrder = async (req, res) => {
   try {
     const { plan } = req.body;
     const userId = req.headers["x-user-id"];
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "User not authenticated",
+      });
+    }
+
     const selectedPlan = PLANS[plan];
 
     if (!selectedPlan) {
@@ -47,27 +54,65 @@ export const verifyPayment = async (req, res) => {
       .digest("hex");
 
     if (generateSignature !== razorpay_signature) {
-      return res.status(400).json({ message: "Payment verification failed" });
+      return res.status(400).json({
+        message: "Payment verification failed",
+      });
     }
 
-    const payment = await Payment.findOne({ orderId: razorpay_order_id });
-
-    if (!payment) {
-      return res.status(404).json({ message: "Payment not found" });
-    }
-
-    payment.status = "paid";
-    payment.paymentId = razorpay_payment_id;
-    await payment.save();
-
-    await axios.post(`${process.env.AUTH_SERVICE}/update-plan`, {
-      userId: payment.userId,
-      plan: payment.plan,
-      credits: payment.credits,
+    const payment = await Payment.findOne({
+      orderId: razorpay_order_id,
     });
 
-    return res.status(200).json({ message: "Payment verified" });
+    if (!payment) {
+      return res.status(404).json({
+        message: "Payment not found",
+      });
+    }
+
+    const claimedPayment = await Payment.findOneAndUpdate(
+      {
+        _id: payment._id,
+        status: "created",
+      },
+      {
+        $set: {
+          status: "processing",
+          paymentId: razorpay_payment_id,
+        },
+      },
+      { new: true },
+    );
+
+    if (!claimedPayment) {
+      if (payment.status === "paid") {
+        return res.status(200).json({
+          success: true,
+          message: "Payment already verified",
+        });
+      }
+
+      return res.status(409).json({
+        message: "Payment is already being processed",
+      });
+    }
+
+    await axios.post(`${process.env.AUTH_SERVICE}/update-plan`, {
+      userId: claimedPayment.userId,
+      plan: claimedPayment.plan,
+      credits: claimedPayment.credits,
+      orderId: claimedPayment.orderId,
+    });
+
+    claimedPayment.status = "paid";
+    await claimedPayment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment verified successfully",
+    });
   } catch (error) {
+    console.log("VERIFY PAYMENT ERROR:", error);
+
     return res.status(500).json({
       message: error.message,
       details: error.response?.data,

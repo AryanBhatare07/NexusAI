@@ -5,9 +5,7 @@ import redis from "../../../shared/redis/redis.js";
 
 export const login = async (req, res) => {
   try {
-    console.log("AUTH LOGIN HIT");
     const { token } = req.body;
-    console.log("TOKEN RECEIVED:", Boolean(token));
     const decoded = await getAuth(app).verifyIdToken(token);
     let user = await User.findOne({
       firebaseUid: decoded.uid,
@@ -75,49 +73,91 @@ export const logout = async (req, res) => {
 
 export const updateUserPayment = async (req, res) => {
   try {
-    const { plan, credits, userId } = req.body;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    user.plan = plan;
-    user.credits += credits;
-    user.totalCredits += credits;
-    user.planExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    await user.save();
+    const { plan, credits, userId, orderId } = req.body;
 
-    const sessionData = await redis.get(`user-session-${user._id}`);
-    const sessionId = JSON.parse(sessionData)?.sessionId;
-    const updatedSession = await redis.get(`session-${sessionId}`);
-    await redis.set(
-      `session-${sessionId}`,
-      JSON.stringify({
-        userID: user._id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        plan: user.plan,
-        credits: user.credits,
-        totalCredits: user.totalCredits,
-        planExpiresAt: user.planExpiresAt,
-      }),
-      "EX",
-      7 * 24 * 60 * 60,
+    if (!plan || !credits || !userId || !orderId) {
+      return res.status(400).json({
+        message: "Missing payment details",
+      });
+    }
+
+    const user = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        processedPayments: { $ne: orderId },
+      },
+      {
+        $set: {
+          plan,
+          planExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+        $inc: {
+          credits,
+          totalCredits: credits,
+        },
+        $addToSet: {
+          processedPayments: orderId,
+        },
+      },
+      { new: true },
     );
 
-    const updatedData = await redis.get(`session-${sessionId}`);
-    return res.status(200).json({ success: true });
+    if (!user) {
+      const existingUser = await User.findById(userId);
+
+      if (!existingUser) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      if (existingUser.processedPayments.includes(orderId)) {
+        return res.status(200).json({
+          success: true,
+          message: "Payment already processed",
+        });
+      }
+
+      return res.status(400).json({
+        message: "Payment could not be processed",
+      });
+    }
+
+    const sessionData = await redis.get(`user-session-${user._id}`);
+
+    const sessionId = sessionData ? JSON.parse(sessionData)?.sessionId : null;
+
+    if (sessionId) {
+      await redis.set(
+        `session-${sessionId}`,
+        JSON.stringify({
+          userID: user._id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          plan: user.plan,
+          credits: user.credits,
+          totalCredits: user.totalCredits,
+          planExpiresAt: user.planExpiresAt,
+        }),
+        "EX",
+        7 * 24 * 60 * 60,
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Credits updated successfully",
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: `update user payment error ${error}` });
+    return res.status(500).json({
+      message: `update user payment error ${error.message}`,
+    });
   }
 };
 
 export const deductCredits = async (req, res) => {
   try {
-    console.log("DEDUCT CREDITS API CALLED");
-    console.log("BODY:", req.body);
     const { userId, agent } = req.body;
 
     const COST = {
@@ -130,7 +170,6 @@ export const deductCredits = async (req, res) => {
     };
 
     const user = await User.findById(userId);
-    console.log("USER CREDITS BEFORE:", user.credits);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -144,7 +183,6 @@ export const deductCredits = async (req, res) => {
 
     user.credits -= requiredCredits;
     await user.save();
-    console.log("USER CREDITS AFTER:", user.credits);
 
     const sessionData = await redis.get(`user-session-${user._id}`);
 

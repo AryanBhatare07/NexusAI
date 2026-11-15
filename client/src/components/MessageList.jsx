@@ -59,7 +59,7 @@ const MessageList = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-5 max-w-5xl mx-auto w-full">
+        <div className="space-y-5 w-full">
           {messages?.map((msg, i) => (
             <div key={i}>
               <MessageBubble

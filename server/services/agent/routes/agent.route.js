@@ -5,7 +5,6 @@ import multer from "../config/multer.js";
 const router = express.Router();
 
 router.post("/chat", (req, res, next) => {
-  console.log("AGENT CHAT ROUTE HIT");
   next();
 }, multer.single("file"), agent);
 

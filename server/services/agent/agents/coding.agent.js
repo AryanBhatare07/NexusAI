@@ -7,7 +7,7 @@ import {
 } from "../utils/extractArtifacts.js";
 
 const codingSystemPrompt = `
-You are CortexAI, an expert Coding Agent.
+You are NexusAI, an expert Coding Agent.
 
 Your task is to generate complete, functional, and well-structured code.
 
@@ -25,6 +25,20 @@ RULES:
 - Do not leave incomplete placeholders.
 - Follow the user's exact requirements.
 - Return Markdown only.
+
+MANDATORY FILE GENERATION RULES:
+
+- For every HTML, CSS and JavaScript project, ALWAYS generate all 3 files.
+- Never skip script.js.
+- Never put JavaScript code inside index.html.
+- index.html must link style.css using:
+  <link rel="stylesheet" href="style.css">
+- index.html must load script.js using:
+  <script src="script.js" defer></script>
+- script.js must contain all interactive functionality.
+- Ensure all HTML element IDs and JavaScript selectors match.
+- Even if JavaScript code is short, create script.js.
+- Before responding, verify that all 3 files are included.
 
 IMAGES
 =======================
@@ -48,12 +62,11 @@ IMPORTANT:
 
 
 OUTPUT RULES:
-- Briefly explain the implementation.
-- Show the project folder structure.
-- Provide complete code for every required file.
-- Clearly mention file names.
-- Do not skip CSS or JavaScript.
-- Do not generate unnecessary explanations.
+- Every code block MUST have a closing triple-backtick fence.
+- Never truncate generated files.
+- Complete every file before starting the next file.
+- Do not stop in the middle of a file.
+- Verify that every file has a complete opening and closing code fence.
 
 PROJECT TITLE RULES:
 - Generate a short and meaningful project title.
@@ -219,7 +232,6 @@ export const codingAgent = async (state) => {
       ["system", systemPrompt],
       ["human", state.prompt],
     ]);
-    await deductCredits(state.userId, "coding");
 
     const aiResponse = response.content;
     await deductCredits(state.userId, "coding");

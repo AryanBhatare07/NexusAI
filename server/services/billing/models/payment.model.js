@@ -9,6 +9,7 @@ const paymentSchema = new mongoose.Schema(
     orderId: {
       type: String,
       required: true,
+      unique: true,
     },
     paymentId: String,
     amount: Number,
@@ -24,13 +25,13 @@ const paymentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["created", "paid", "failed"],
+      enum: ["created", "processing", "paid", "failed"],
       default: "created",
     },
   },
   { timestamps: true },
 );
 
-const Payment = mongoose.model("Payment",paymentSchema)
+const Payment = mongoose.model("Payment", paymentSchema);
 
-export default Payment
+export default Payment;

@@ -27,10 +27,12 @@ const MessageBubble = ({
   };
   return (
     <div
-      className={`flex w-full mb-6 ${isUser ? "justify-end" : "justify-start"}`}
+      className={`flex w-full mb-6 ${
+        isUser ? "justify-end pr-4 md:pr-8" : "justify-start"
+      }`}
     >
       <div
-        className={`w-fit max-w-[95%] md:max-w-[80%]
+        className={`w-fit max-w-[90%] md:max-w-[75%]
     px-4 py-3 rounded-2xl
     text-[14px] md:text-[15px]
     leading-7 break-words overflow-hidden
