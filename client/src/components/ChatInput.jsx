@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowUp,
   Code2,
@@ -11,6 +11,8 @@ import {
   Presentation,
   X,
   Zap,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import sendMessage from "../features/sendMessage";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,11 +31,11 @@ import {
 } from "../redux/conversationSlice";
 import { updateConversation } from "../features/updateConversation";
 import getCurrentUser from "../features/getCurrentUser";
-import { useRef } from "react";
 
 const ChatInput = () => {
   const [value, setValue] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("Auto");
+  const [isAgentOpen, setIsAgentOpen] = useState(false);
   const { selectedConversation } = useSelector((state) => state.conversation);
   const { userData } = useSelector((state) => state.user);
   const { messages, isLoading } = useSelector((state) => state.message);
@@ -41,7 +43,7 @@ const ChatInput = () => {
   const fileRef = useRef(null);
   const dispatch = useDispatch();
   const handleSendMessage = async () => {
-    dispatch(setIsLoading(true))
+    dispatch(setIsLoading(true));
     setSelectedFile(null);
     if (!value.trim()) return;
     let conversation = selectedConversation;
@@ -76,7 +78,7 @@ const ChatInput = () => {
 
     try {
       const data = await sendMessage(formData);
-      dispatch(setIsLoading(false))
+      dispatch(setIsLoading(false));
       if (!data) {
         console.error("No response received from server");
         return;
@@ -116,6 +118,27 @@ const ChatInput = () => {
     }
   };
 
+  const agentDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        agentDropdownRef.current &&
+        !agentDropdownRef.current.contains(event.target)
+      ) {
+        setIsAgentOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
   const agents = [
     {
       id: "auto",
@@ -154,30 +177,92 @@ const ChatInput = () => {
     },
   ];
   return (
-    <div className="w-full overflow-hidden px-3 md:px-5 py-4 border-t border-white/[0.06] bg-[#0d0f14]">
+    <div className="w-full overflow-visible px-3 md:px-5 py-3 border-t border-white/[0.06] bg-[#0d0f14]">
       <div className="flex flex-col gap-2 bg-white/[0.03] border border-white/[0.07] rounded-2xl px-4 pt-3.5 pb-3">
-        <div className="flex w-[80%] gap-2 pr-2 flex-wrap">
+        <div className="hidden md:flex w-[80%] gap-2 pr-2 flex-wrap">
           {agents.map((agent, i) => {
             const isActive = selectedAgent === agent.label;
             const Icon = agent.icon;
+
             return (
               <div
                 key={i}
                 onClick={() => setSelectedAgent(agent.label)}
                 className={`cursor-pointer shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-all ${
                   isActive
-                    ? "bg-gradient-to-r from-indigo-500 to-violet-600 text-white border-transparent shadow-[0_1px_8px_rgba(99,102,241,.35)]"
-                    : "bg-white/[0.03] text-slate-400 border-white/[0.06] hover:bg-white/[0.07]"
+                    ? "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-[0_1px_8px_rgba(99,102,241,.35)]"
+                    : "bg-white/[0.03] text-slate-400 border border-white/[0.06] hover:bg-white/[0.07]"
                 }`}
               >
-                <Icon
-                  size={14}
-                  className={isActive ? "text-white" : "text-slate-500"}
-                />
+                <Icon size={14} />
                 {agent.label}
               </div>
             );
           })}
+        </div>
+
+        <div ref={agentDropdownRef} className="relative md:hidden">
+          {agents.map((agent) => {
+            if (agent.label !== selectedAgent) return null;
+
+            const Icon = agent.icon;
+
+            return (
+              <button
+                key={agent.id}
+                onClick={() => setIsAgentOpen(!isAgentOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl
+        bg-gradient-to-r from-indigo-500/15 to-violet-500/15
+        border border-indigo-400/20 text-white text-xs
+        font-medium active:scale-95 transition-all"
+              >
+                <Icon size={15} className="text-indigo-400" />
+                {agent.label} Agent
+                <ChevronDown
+                  size={14}
+                  className={`text-slate-400 transition-transform ${
+                    isAgentOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+            );
+          })}
+
+          {isAgentOpen && (
+            <div
+              className="absolute bottom-full left-0 mb-2 w-52
+    rounded-xl border border-white/10 bg-[#191c27]
+    shadow-2xl shadow-black/40 p-2 z-50"
+            >
+              {agents.map((agent) => {
+                const Icon = agent.icon;
+                const isActive = selectedAgent === agent.label;
+
+                return (
+                  <button
+                    key={agent.id}
+                    onClick={() => {
+                      setSelectedAgent(agent.label);
+                      setIsAgentOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between
+            px-3 py-2.5 rounded-lg text-xs transition-all ${
+              isActive
+                ? "bg-indigo-500/15 text-indigo-300"
+                : "text-slate-400 hover:bg-white/[0.05] hover:text-white"
+            }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <Icon size={15} />
+                      {agent.label} Agent
+                    </span>
+
+                    {isActive && <Check size={15} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {selectedFile && (
@@ -260,7 +345,7 @@ const ChatInput = () => {
             </button>
           </div>
           <button
-          disabled={!value && isLoading}
+            disabled={!value && isLoading}
             onClick={handleSendMessage}
             disabled={!value.trim()}
             className={`flex items-center justify-center w-9 h-9 rounded-xl text-white border-none transition-all duration-150 ${value.trim() ? "bg-linear-to-br from-indigo-500 to-violet-700 cursor-pointer hover:opacity-90 shadow-md shadow-indigo-500/20" : "bg-white/[0.06] text-slate-600 cursor-default"}`}
