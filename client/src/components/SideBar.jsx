@@ -74,19 +74,23 @@ function SideBar() {
   };
 
   const handleDeleteConversation = async (id) => {
+    // Immediately update UI
+    dispatch(removeConversation(id));
+
+    if (selectedConversation?._id === id) {
+      dispatch(setMessages([]));
+      dispatch(setChatStarted(false));
+    }
+
+    setOpenMenu(null);
+
     try {
       await api.delete(`/api/chat/delete-conversation/${id}`);
-
-      dispatch(removeConversation(id));
-
-      if (selectedConversation?._id === id) {
-        dispatch(setMessages([]));
-        dispatch(setChatStarted(false));
-      }
-
-      setOpenMenu(null);
     } catch (error) {
       console.log("Delete error:", error.response?.data || error);
+
+      // Refresh conversations if backend deletion fails
+      dispatch(getConversationS());
     }
   };
 
