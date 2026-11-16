@@ -39,20 +39,25 @@ function SideBar() {
     (state) => state.conversation,
   );
   const { userData } = useSelector((state) => state.user);
+  const currentUserId = userData?._id || userData?.userID;
 
   useEffect(() => {
-    if (!userData?.userID) {
+    if (!currentUserId) {
       dispatch(setConversations([]));
       return;
     }
 
     const getConv = async () => {
-      const data = await getConversationS();
-      dispatch(setConversations(data));
+      try {
+        const data = await getConversationS();
+        dispatch(setConversations(data));
+      } catch (error) {
+        console.log("Get conversations error:", error);
+      }
     };
 
     getConv();
-  }, [userData?.userID, dispatch]);
+  }, [currentUserId, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
