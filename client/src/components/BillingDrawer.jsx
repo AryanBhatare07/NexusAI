@@ -67,7 +67,7 @@ const BillingDrawer = ({ open, onClose }) => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="fixed right-0 top-0 z-50 h-dvh w-full sm:w-[420px] max-w-full bg-[#0f1117] border-l border-white/10 shadow-2xl flex flex-col overflow-hidden"
+            className="fixed right-0 top-0 z-50 h-dvh w-full sm:w-105 max-w-full bg-[#0f1117] border-l border-white/10 shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/10 shrink-0">
@@ -86,7 +86,7 @@ const BillingDrawer = ({ open, onClose }) => {
 
             {/* Current Plan */}
             <div className="p-4 sm:p-5 shrink-0">
-              <div className="rounded-xl bg-white/[0.04] border border-white/10 p-4">
+              <div className="rounded-xl bg-white/4 border border-white/10 p-4">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-slate-300 text-sm">Current Plan</p>

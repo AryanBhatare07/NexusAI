@@ -10,6 +10,7 @@ import { checkAgentLimit } from "../config/agentLimit.js";
 export const pdfRag = async (state) => {
   try {
     await checkAgentLimit(state.userId, "pdf");
+
     const buffer = fs.readFileSync(state.file.path);
     const pdf = new PDFParse({
       data: buffer,
@@ -59,9 +60,11 @@ export const pdfRag = async (state) => {
     console.log(error);
     return {
       ...state,
-      aiResponse: error?.data?.message,
+      aiResponse: error?.message || "PDF processing failed.",
     };
   } finally {
-    fs.unlinkSync(state.file.path);
+    if (state.file?.path && fs.existsSync(state.file.path)) {
+      fs.unlinkSync(state.file.path);
+    }
   }
 };

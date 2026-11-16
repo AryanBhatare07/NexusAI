@@ -3,7 +3,7 @@ import MessageBubble from "./MessageBubble";
 import LoadingAnimation from "./LoadingAnimation";
 import { useRef } from "react";
 import { useEffect } from "react";
-import { BrainCircuit, Sparkles } from "lucide-react";
+import { BrainCircuit } from "lucide-react";
 
 const MessageList = () => {
   const { selectedConversation } = useSelector((state) => state.conversation);

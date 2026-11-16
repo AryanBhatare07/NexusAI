@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Coins,
   LogOut,
@@ -18,12 +17,10 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addConversation,
   setConversations,
-  setConversationTitle,
   setSelectedConversation,
   removeConversation,
 } from "../redux/conversationSlice";
 import { createConversation } from "../features/createConversation";
-import { deleteConversation } from "../features/deleteConversation";
 import logout from "../features/logout";
 import { setUserData } from "../redux/userSlice";
 import { setChatStarted, setMessages } from "../redux/messageSlice";
@@ -31,7 +28,6 @@ import BillingDrawer from "./BillingDrawer";
 import api from "../../utils/axios";
 
 function SideBar() {
-  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const dispatch = useDispatch();
   const [imageError, setImageError] = useState(false);
@@ -45,16 +41,18 @@ function SideBar() {
   const { userData } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (!userData?._id) {
+    if (!userData?.userID) {
       dispatch(setConversations([]));
       return;
     }
+
     const getConv = async () => {
       const data = await getConversationS();
       dispatch(setConversations(data));
     };
+
     getConv();
-  }, [userData?._id, dispatch]);
+  }, [userData?.userID, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -298,8 +296,6 @@ function SideBar() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-
-                            console.log("Delete clicked:", conv._id);
 
                             setOpenMenu(null);
                             handleDeleteConversation(conv._id);
